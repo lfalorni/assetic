@@ -61,7 +61,7 @@ class UglifyJs2Filter extends BaseNodeFilter
     {
         $this->comments = $comments;
     }
-    
+
     public function setWrap($wrap)
     {
         $this->wrap = $wrap;
@@ -77,12 +77,16 @@ class UglifyJs2Filter extends BaseNodeFilter
             ? array($this->nodeBin, $this->uglifyjsBin)
             : array($this->uglifyjsBin));
 
+        // @note about ARGS.alias and uglify
+        // "--compress hoist_vars=false" is badly parsed as ARGS['compress hoist_vars'] = false in bin/uglify ...
+        // "-c hoist_vars=false" is successfully parsed as ARGS['compress'] = { hoist_vars:false } in bin/uglify
         if ($this->compress) {
-            $pb->add(true === $this->compress ? '--compress' : '--compress '.$this->compress);
+            $pb->add(true === $this->compress ? '--compress' : '-c '.$this->compress);
         }
 
+        // https://github.com/mishoo/UglifyJS2 : 'beautify' can equal "false/true" or list of options
         if ($this->beautify) {
-            $pb->add('--beautify');
+            $pb->add(true === $this->beautify ? '--beautify' : '-b '.$this->beautify);
         }
 
         if ($this->mangle) {
@@ -96,7 +100,7 @@ class UglifyJs2Filter extends BaseNodeFilter
         if ($this->comments) {
             $pb->add('--comments')->add(true === $this->comments ? 'all' : $this->comments);
         }
-        
+
         if ($this->wrap) {
             $pb->add('--wrap')->add($this->wrap);
         }
